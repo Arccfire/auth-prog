@@ -3,9 +3,14 @@ from datetime import datetime as dt
 import statistics as st
 import matplotlib.pyplot as plt
 
-VAR = 0.5
+VAR_REPORT = 0.5
+DAY_TO_MIN = 1440
+HOUR_TO_MIN = 60
 
 def flag_formater(flag_list):
+    """
+
+    """
 
     rule_expansion = {
         "bfd":"brute force detected",
@@ -31,8 +36,8 @@ def flag_formater(flag_list):
         else:
             print(" IP: ",flag["ip"])
         if flag["rule"] == "uhd":
-            nh_min = str(int(flag["normal_time"][0]//60)) + ":" + str(int(flag["normal_time"][0])%60)
-            nh_max = str(int(flag["normal_time"][1]//60)) + ":" + str(int(flag["normal_time"][1])%60)
+            nh_min = str(int(flag["normal_time"][0]//HOUR_TO_MIN)) + ":" + str(int(flag["normal_time"][0])%HOUR_TO_MIN)
+            nh_max = str(int(flag["normal_time"][1]//HOUR_TO_MIN)) + ":" + str(int(flag["normal_time"][1])%HOUR_TO_MIN)
             print(" Normal Hours: ",nh_min, " - ", nh_max)
         if flag["rule"] == "fsd":
             print(" Fail Count: ",flag["count"])
@@ -41,6 +46,9 @@ def flag_formater(flag_list):
     return
 
 def most_attacking_ip(flag_list):
+    """
+
+    """
     ip_hash = {}
     for flag in flag_list:
         if flag["rule"] == "mid":
@@ -65,6 +73,9 @@ def most_attacking_ip(flag_list):
     return (max_atck_ip,max_atcks)
 
 def most_attacked_user(flag_list):
+    """
+
+    """
     user_hash = {}
     for flag in flag_list:
         if flag["rule"] == "bfd":
@@ -88,6 +99,9 @@ def most_attacked_user(flag_list):
     return (max_tar_user,max_tar_num)
 
 def flag_summary(flag_list):
+    """
+
+    """
     num_warn = 0
     num_crit = 0
     for flag in flag_list:
@@ -105,6 +119,9 @@ def flag_summary(flag_list):
     return
 
 def csv_export(flag_list):
+    """
+
+    """
     df = pd.DataFrame(flag_list)
     #pd.set_option('display.max_columns', None)
     out_file_name = "outputs/"+str(dt.now().replace(microsecond=0).strftime("%Y-%m-%d_%H-%M-%S"))+".csv"
@@ -113,40 +130,43 @@ def csv_export(flag_list):
     return
 
 def summary_report(flag_list):
+    """
+
+    """
     num_rule = {"bfd":0,"uhd":0,"mid":0,"fsd":0} # bfd, uhd, mid, fsd
     ts = []
     num_crit = 0
     num_warn = 0
     for flag in flag_list:
         num_rule[flag["rule"]] += 1
-        ts.append(int(flag["time"].hour*60 + flag["time"].minute))
+        ts.append(int(flag["time"].hour*HOUR_TO_MIN + flag["time"].minute))
         if flag["severity"] == "WARNING":
             num_warn += 1
         else:
             num_crit += 1
     ts_mean = st.mean(ts)
     ts_stdev = st.stdev(ts)
-    ts_sub = ts_mean - VAR*ts_stdev
-    ts_add = ts_mean + VAR*ts_stdev
+    ts_sub = ts_mean - VAR_REPORT*ts_stdev
+    ts_add = ts_mean + VAR_REPORT*ts_stdev
     if ts_sub < 0:
         ts_sub = 0
-    if ts_add >= 1440:
-        ts_add = 1439
+    if ts_add >= DAY_TO_MIN:
+        ts_add = DAY_TO_MIN - 1
     ts_min = str(int(ts_sub)//60)+":"
-    if(int(ts_sub)%60 < 10): 
-        ts_min += "0" + str(int(ts_sub)%60)
+    if(int(ts_sub)%HOUR_TO_MIN < 10): 
+        ts_min += "0" + str(int(ts_sub)%HOUR_TO_MIN)
     else:
-        ts_min += str(int(ts_sub)%60)
+        ts_min += str(int(ts_sub)%HOUR_TO_MIN)
 
     ts_max = str(int(ts_add)//60)+":"
-    if(int(ts_add)%60 < 10): 
-        ts_max += "0" + str(int(ts_add)%60)
+    if(int(ts_add)%HOUR_TO_MIN < 10): 
+        ts_max += "0" + str(int(ts_add)%HOUR_TO_MIN)
     else:
-        ts_max += str(int(ts_add)%60)
+        ts_max += str(int(ts_add)%HOUR_TO_MIN)
 
     ts_num = 0
     for flag in flag_list:
-        x = int(flag["time"].hour*60 + flag["time"].minute)
+        x = int(flag["time"].hour*HOUR_TO_MIN + flag["time"].minute)
         if  (x < ts_add) and (x > ts_sub):
             ts_num += 1
     max_tar_user,max_tar_num = most_attacked_user(flag_list)
@@ -173,7 +193,7 @@ def summary_report(flag_list):
     Multiple IP Anomaly  : {num_rule["mid"]}
     Fail → Success       : {num_rule["fsd"]}
 
-    PEAK ATTACK TIME (+/- {VAR} sigma)
+    PEAK ATTACK TIME (+/- {VAR_REPORT} sigma)
     -------------------------------------
     Hour                 : {ts_min} - {ts_max}
     Flags in this time   : {ts_num}
@@ -193,6 +213,9 @@ def summary_report(flag_list):
     return
 
 def timeline_chart(flag_list):
+    """
+
+    """
     flag_list = sorted(flag_list,key = lambda x: x["time"].hour)
     timeline_warn = {i: 0 for i in range(24)}
     timeline_crit = {i: 0 for i in range(24)}

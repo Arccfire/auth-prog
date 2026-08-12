@@ -1,17 +1,23 @@
-from datetime import datetime,timedelta
+#from datetime import datetime,timedelta
 import statistics as st
 
 TIME_WINDOW = 60
 NUM_FAIL = 5
-VAR = 3
+VAR_UHD = 3
 NUM_LOC = 3
 TIME_WINDOW_LOCATION = 10
 NUM_FAIL = 4
+DAY_TO_MIN = 1440
+HOUR_TO_MIN = 60
 
 def rule_brute_force(parsed_data):
+    """
+    Detect brute force attempts by sorting the data using ip address,
+    using sliding window to check for NUM_FAIL attempts within TIME_WINDOW
+    returning flag with list of all usernames used during this attempt
+    """
     sorted_data = sorted(parsed_data,key=lambda x: x["ip"])
     rule_flags = []
-
     ip_add = sorted_data[0]["ip"]
     ip_count = 1
     sw_l = 0
@@ -33,7 +39,14 @@ def rule_brute_force(parsed_data):
                         sw_l += 1
                         continue
                     if ts_num >= NUM_FAIL:
-                        rule_flags.append({"rule":"bfd","severity":"CRITICAL","ip":ip_add,"user":bfd_users.copy(),"count":ts_num,"time":ts[sw_r]})
+                        rule_flags.append({
+                            "rule":"bfd",
+                            "severity":"CRITICAL",
+                            "ip":ip_add,
+                            "user":bfd_users.copy(),
+                            "count":ts_num,
+                            "time":ts[sw_r]
+                        })
                         ts_num = 2
                         sw_l = sw_r + 1
                         sw_r += 2
@@ -64,6 +77,12 @@ def rule_brute_force(parsed_data):
     return rule_flags
 
 def unusual_hour_detection(parsed_data):
+    """
+    Detects unusual successful login based on
+    +/- VAR_UHD*sigma variation for login time for the user
+    sorts data by user and process timestamp for each login
+    by same user.
+    """
     rule_flags = []
     sorted_data = sorted(parsed_data,key = lambda x: x["user"])
     sorted_data.append(sorted_data[0])
@@ -82,19 +101,26 @@ def unusual_hour_detection(parsed_data):
                 
                 user_ts_mod = []
                 for x in user_ts:
-                    user_ts_mod.append(int(x["ts"].hour*60 + x["ts"].minute))
+                    user_ts_mod.append(int(x["ts"].hour*HOUR_TO_MIN + x["ts"].minute))
                 ts_mean = st.mean(user_ts_mod)
                 ts_std = st.stdev(user_ts_mod)
-                ts_min = (ts_mean - VAR*ts_std)
+                ts_min = (ts_mean - VAR_UHD*ts_std)
                 if ts_min < 0:
                     ts_min = 0
-                ts_max = (ts_mean + VAR*ts_std)
-                if ts_max > 1440:
-                    ts_max = 1440
+                ts_max = (ts_mean + VAR_UHD*ts_std)
+                if ts_max >= DAY_TO_MIN:
+                    ts_max = DAY_TO_MIN - 1
                 for x in user_ts:
-                    x_ts = (x["ts"].hour*60 + x["ts"].minute)
+                    x_ts = (x["ts"].hour*HOUR_TO_MIN + x["ts"].minute)
                     if (x_ts < ts_min) or (x_ts > ts_max):
-                        rule_flags.append({"rule":"uhd","severity":"WARNING","user":x["user"],"ip":x["ip"],"time":x["ts"],"normal_time":[ts_min,ts_max]})
+                        rule_flags.append({
+                            "rule":"uhd",
+                            "severity":"WARNING",
+                            "user":x["user"],
+                            "ip":x["ip"],
+                            "time":x["ts"],
+                            "normal_time":[ts_min,ts_max]
+                        })
                 user_ts.clear()
                 user_ts_mod.clear()
                 current_user = next_user
@@ -103,6 +129,9 @@ def unusual_hour_detection(parsed_data):
     return rule_flags
 
 def multi_ip_detection(parsed_data):
+    """
+
+    """
     rule_flags = []
     sorted_data = sorted(parsed_data,key = lambda x: x["user"])
     sorted_data.append(sorted_data[0])
@@ -125,7 +154,7 @@ def multi_ip_detection(parsed_data):
                 while( sw_r < len(user_ts) and sw_l <= sw_r):
                     num_ip = 0
                     ip_list = set()
-                    if((user_ts[sw_r]["ts"] - user_ts[sw_l]["ts"]).total_seconds() / 60 > TIME_WINDOW_LOCATION):
+                    if((user_ts[sw_r]["ts"] - user_ts[sw_l]["ts"]).total_seconds() / HOUR_TO_MIN > TIME_WINDOW_LOCATION):
                         #sw_r += 1
                         sw_l += 1
                         continue
@@ -133,7 +162,13 @@ def multi_ip_detection(parsed_data):
                         ip_list.add(user_ts[sw_l + y]["ip"])
                     num_ip = len(ip_list)
                     if num_ip >= NUM_LOC:
-                        rule_flags.append({"rule":"mid","severity":"WARNING","user":user_ts[sw_l]["user"],"ip":ip_list.copy(),"time":user_ts[sw_l]["ts"]})
+                        rule_flags.append({
+                            "rule":"mid",
+                            "severity":"WARNING",
+                            "user":user_ts[sw_l]["user"],
+                            "ip":ip_list.copy(),
+                            "time":user_ts[sw_l]["ts"]
+                        })
                         sw_l = sw_r + 1
                         sw_r = sw_r + 2
                     else:
@@ -148,6 +183,9 @@ def multi_ip_detection(parsed_data):
     return rule_flags
 
 def fail_success_detection(parsed_data):
+    """
+
+    """
     rule_flags = []
     sorted_data = sorted(parsed_data,key = lambda x: x["user"])
     sorted_data.append(sorted_data[0])
@@ -180,7 +218,14 @@ def fail_success_detection(parsed_data):
                             warn = "CRITICAL"
                         else:
                             warn = "WARNING"
-                        rule_flags.append({"rule":"fsd","severity":warn ,"user":x["user"],"ip":x["ip"],"time":x["ts"],"count":num_fail})
+                        rule_flags.append({
+                            "rule":"fsd",
+                            "severity":warn ,
+                            "user":x["user"],
+                            "ip":x["ip"],
+                            "time":x["ts"],
+                            "count":num_fail
+                        })
                         num_fail = 0
                         ip_list.clear()
             
