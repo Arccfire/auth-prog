@@ -1,0 +1,7 @@
+Mar 01 09:00:00 server sshd[1064]: Accepted password for alice from 192.168.1.10 port 22222 ssh2
+Mar 02 09:10:00 server sshd[1065]: Accepted password for alice from 192.168.1.10 port 22222 ssh2
+Mar 03 08:50:00 server sshd[1066]: Accepted password for alice from 192.168.1.10 port 22222 ssh2
+Mar 04 03:00:00 server sshd[1067]: Accepted password for alice from 192.168.1.10 port 22222 ssh2
+Mar 05 09:00:00 server sshd[1068]: Accepted password for zoe from 192.168.1.90 port 22222 ssh2
+Mar 06 09:00:00 server sshd[1069]: Accepted password for zoe from 192.168.1.90 port 22222 ssh2
+Mar 07 09:00:00 server sshd[1070]: Accepted password for zoe from 192.168.1.90 port 22222 ssh2

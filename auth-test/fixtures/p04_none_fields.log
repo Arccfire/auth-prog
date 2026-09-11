@@ -1,0 +1,3 @@
+Mar 01 09:00:00 server sshd[1008]: Accepted password for alice from 192.168.1.10 port 22222 ssh2
+Mar 01 09:05:00 server sshd[1009]: Failed password for bob port 999 ssh2
+Mar 01 09:10:00 server kernel audit event without a bracket-colon

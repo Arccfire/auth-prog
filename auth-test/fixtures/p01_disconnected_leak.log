@@ -1,0 +1,4 @@
+Mar 01 09:00:00 server sshd[1001]: Disconnected from 192.168.1.10 port 40001
+Mar 01 09:00:10 server sshd[1002]: Disconnected from 192.168.1.20 port 40002
+Mar 01 09:00:20 server sshd[1003]: Connection closed by 192.168.1.30
+Mar 01 09:00:30 server sshd[1004]: Accepted password for alice from 192.168.1.10 port 22222 ssh2

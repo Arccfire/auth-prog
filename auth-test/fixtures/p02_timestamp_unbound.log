@@ -1,0 +1,2 @@
+kernel: unrelated line with no timestamp at all
+Mar 01 09:00:00 server sshd[1005]: Accepted password for alice from 192.168.1.10 port 22222 ssh2

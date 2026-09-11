@@ -7,4 +7,19 @@ requires-python = ">=3.12"
 dependencies = [
     "matplotlib>=3.10.9",
     "pandas>=3.0.3",
+    "ruff>=0.16.5",
 ]
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "ruff>=0.16.5",
+]
+
+# [tool.ruff]
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["CPY001"]
+
+# [tool.mypy]

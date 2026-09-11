@@ -1,0 +1,4 @@
+Mar 01 09:00:00 server sudoedit[2001]: alice : TTY=pts/0 ; COMMAND=/bin/vi
+Mar 01 09:01:00 server su[2002]: Accepted password for bob from 192.168.1.20 port 1 ssh2
+Mar 01 09:02:00 server cron[2003]: Accepted password for carol from 192.168.1.30 port 1 ssh2
+Mar 01 09:03:00 server sudo[2004]: dave : TTY=pts/0 ; COMMAND=/bin/ls

@@ -1,0 +1,3 @@
+Mar 01 09:00:00 server sudo[3001]: alice : TTY=pts/0 ; COMMAND=/bin/ls
+Mar 01 09:01:00 server sudo[3002]: bob : TTY=pts/0 ; COMMAND=/usr/bin/id
+Mar 01 09:02:00 server sshd[1010]: Accepted password for alice from 192.168.1.10 port 22222 ssh2
