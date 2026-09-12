@@ -29,7 +29,7 @@ def rule_brute_force(parsed_data):
     bfd_users = set()
     if sorted_data[0]["status"].lower() != "accepted":
         ip_count = 1
-        ts = [sorted_data[first_fail]["ts"]]
+        ts = [sorted_data[0]["ts"]]
         bfd_users = {sorted_data[0]["user"]}
 
     sorted_data.append(

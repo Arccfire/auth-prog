@@ -153,7 +153,6 @@ def summary_report(flag_list):
     ts_sub = max(ts_sub, 0)
     if ts_add >= DAY_TO_MIN:
         ts_add = DAY_TO_MIN - 1
-    nh_min = f'{int(flag["normal_time"][0]) // HOUR_TO_MIN:02d}:{int(flag["normal_time"][0])%HOUR_TO_MIN:02d}'
     ts_min = f'{int(ts_sub)//HOUR_TO_MIN:02d}:{int(ts_sub)%HOUR_TO_MIN:02d}'
     ts_max = f'{int(ts_add)//HOUR_TO_MIN:02d}:{int(ts_add)%HOUR_TO_MIN:02d}'
     ts_num = 0
